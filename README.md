@@ -1,4 +1,4 @@
-# 🚀 N2 DevOps - Ambiente Completo de CI/CD
+# 🚀 N3 DevOps - Ambiente Completo de CI/CD
 
 ## 📋 Visão Geral do Projeto
 
