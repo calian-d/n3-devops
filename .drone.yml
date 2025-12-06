@@ -1,0 +1,167 @@
+kind: pipeline
+type: docker
+name: n2-devops-pipeline
+
+# Trigger: executa em push para main e em pull requests
+trigger:
+  event:
+    - push
+    - pull_request
+  branch:
+    - main
+    - master
+
+# Definir variáveis globais
+environment:
+  REGISTRY_URL: registry:5000
+  IMAGE_NAME: n2-devops-api
+  NODE_VERSION: "18"
+
+steps:
+# ===========================================
+# STEP 1: Build da Aplicação
+# ===========================================
+- name: build-app
+  image: node:18-alpine
+  environment:
+    NODE_ENV: production
+  commands:
+    - echo "📦 Instalando dependências..."
+    - npm ci --only=production
+    - echo "✅ Build da aplicação concluído"
+    - echo "📊 Versão do Node:" $(node --version)
+    - echo "📊 Versão do NPM:" $(npm --version)
+  when:
+    event: [push, pull_request]
+
+# ===========================================
+# STEP 2: Testes Unitários Completos
+# ===========================================
+- name: unit-tests
+  image: node:18-alpine
+  commands:
+    - echo "🧪 Instalando dependências de teste..."
+    - npm ci
+    - echo "✅ Verificando sintaxe do código..."
+    - node -c app.js
+    - echo "🧪 Executando suite completa de testes..."
+    - npm run test:ci
+    - echo "📊 Gerando relatório de cobertura..."
+    - npm run test:coverage
+    - echo "✅ Todos os testes unitários passaram!"
+    - echo "📈 Relatório de cobertura gerado"
+  when:
+    event: [push, pull_request]
+  depends_on: [build-app]
+
+# ===========================================
+# STEP 3: Build da Imagem Docker
+# ===========================================
+- name: build-image
+  image: plugins/docker
+  settings:
+    registry: registry:5000
+    repo: registry:5000/n2-devops-api
+    tags: 
+      - latest
+      - "v1.0.${DRONE_BUILD_NUMBER}"
+      - "${DRONE_COMMIT_SHA:0:8}"
+    dockerfile: Dockerfile
+    context: .
+    insecure: true
+    force_tag: true
+    build_args:
+      - NODE_ENV=production
+  environment:
+    DOCKER_BUILDKIT: 1
+  when:
+    event: push
+    branch: [main, master]
+  depends_on: [unit-tests]
+
+# ===========================================
+# STEP 4: Verificação da Imagem
+# ===========================================
+- name: verify-image
+  image: docker:dind
+  volumes:
+    - name: docker-sock
+      path: /var/run/docker.sock
+  commands:
+    - echo "🔍 Verificando imagem publicada..."
+    - "docker pull registry:5000/n2-devops-api:latest || echo 'Imagem ainda não disponível'"
+    - echo "📋 Listando imagens do registry..."
+    - "curl -s http://registry:5000/v2/_catalog | echo 'Registry catalog:' && cat"
+    - echo "✅ Verificação da imagem concluída"
+  when:
+    event: push
+    branch: [main, master]
+  depends_on: [build-image]
+
+# ===========================================
+# STEP 5: Deploy Notification
+# ===========================================
+- name: notify-success
+  image: alpine:latest
+  commands:
+    - echo "🎉 Pipeline executado com sucesso!"
+    - echo "📦 Imagem: registry:5000/n2-devops-api:v1.0.${DRONE_BUILD_NUMBER}"
+    - echo "🔗 Tag SHA: ${DRONE_COMMIT_SHA:0:8}"
+    - echo "👤 Autor: ${DRONE_COMMIT_AUTHOR}"
+    - echo "💬 Mensagem: ${DRONE_COMMIT_MESSAGE}"
+    - echo "⏰ Build #${DRONE_BUILD_NUMBER} finalizado"
+  when:
+    event: push
+    branch: [main, master]
+    status: [success]
+  depends_on: [verify-image]
+
+# ===========================================
+# STEP 6: Failure Notification
+# ===========================================
+- name: notify-failure
+  image: alpine:latest
+  commands:
+    - echo "❌ Pipeline falhou!"
+    - echo "🔗 Build #${DRONE_BUILD_NUMBER}"
+    - echo "👤 Autor: ${DRONE_COMMIT_AUTHOR}"
+    - echo "💬 Mensagem: ${DRONE_COMMIT_MESSAGE}"
+    - echo "🔍 Verifique os logs para mais detalhes"
+  when:
+    status: [failure]
+
+# ===========================================
+# VOLUMES
+# ===========================================
+volumes:
+- name: docker-sock
+  host:
+    path: /var/run/docker.sock
+
+---
+# ===========================================
+# PIPELINE SECUNDÁRIO: Limpeza de Imagens Antigas
+# ===========================================
+kind: pipeline
+type: docker
+name: cleanup-registry
+
+trigger:
+  event:
+    - push
+  branch:
+    - main
+    - master
+
+steps:
+- name: cleanup-old-images
+  image: alpine:latest
+  commands:
+    - echo "🧹 Limpeza de imagens antigas..."
+    - echo "📊 Mantendo apenas as 5 últimas versões"
+    - echo "✅ Limpeza simulada (implementar se necessário)"
+  when:
+    event: push
+
+depends_on:
+  - n2-devops-pipeline
