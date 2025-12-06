@@ -18,7 +18,7 @@ Este projeto implementa um ambiente completo de DevOps utilizando ferramentas op
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    AMBIENTE N2 DEVOPS                          │
+│                    AMBIENTE n3 DEVOPS                          │
 ├─────────────────────────────────────────────────────────────────┤
 │  👨‍💻 DEVELOPER  │  📚 GITEA     │  🔄 DRONE CI  │  📦 REGISTRY  │
 │      (YOU)      │   (Git)      │   (CI/CD)    │   (Images)    │
@@ -57,7 +57,7 @@ Este projeto implementa um ambiente completo de DevOps utilizando ferramentas op
 
 ```bash
 # Navegar para o diretório do projeto
-cd C:\Users\Calian\git-projetos\n2-devops
+cd C:\Users\Calian\git-projetos\n3-devops
 
 # Subir todos os serviços
 docker-compose up -d
@@ -108,14 +108,14 @@ docker-compose ps
 # Inicializar repositório Git local
 git init
 git add .
-git commit -m "feat: setup inicial do projeto N2 DevOps"
+git commit -m "feat: setup inicial do projeto n3 DevOps"
 
 # Criar repositório no Gitea via Web UI
-# Nome: n2-devops-api
+# Nome: n3-devops-api
 # Visibilidade: Public
 
 # Conectar repositório local com Gitea
-git remote add origin http://localhost:3001/admin/n2-devops-api.git
+git remote add origin http://localhost:3001/admin/n3-devops-api.git
 git branch -M main
 git push -u origin main
 ```
@@ -123,7 +123,7 @@ git push -u origin main
 #### 6️⃣ **Ativar Pipeline no Drone**
 
 1. Acesse: http://localhost:3002
-2. Encontre o repositório `admin/n2-devops-api`
+2. Encontre o repositório `admin/n3-devops-api`
 3. Clique em **ACTIVATE**
 4. Configure: **Trusted** ✅
 
@@ -253,7 +253,7 @@ git push origin main
 curl http://localhost:5000/v2/_catalog
 
 # Listar tags da imagem
-curl http://localhost:5000/v2/n2-devops-api/tags/list
+curl http://localhost:5000/v2/n3-devops-api/tags/list
 
 # Via Registry UI
 # http://localhost:5001
@@ -273,7 +273,7 @@ curl http://localhost:5000/v2/n2-devops-api/tags/list
 #### **2. Demonstração Prática (10 min)**
 ```bash
 # 1. Mostrar repositório Git
-# http://localhost:3001/admin/n2-devops-api
+# http://localhost:3001/admin/n3-devops-api
 
 # 2. Fazer alteração no código
 # Editar app.js - alterar versão
@@ -325,7 +325,7 @@ docker-compose logs drone-runner
 
 # Verificar conectividade
 docker network ls
-docker network inspect n2-devops_devops-network
+docker network inspect n3-devops_devops-network
 ```
 
 #### **Registry inacessível**
@@ -336,7 +336,7 @@ curl http://localhost:5001/
 
 # Verificar volumes
 docker volume ls
-docker volume inspect n2-devops_registry-data
+docker volume inspect n3-devops_registry-data
 ```
 
 ### 🔧 Comandos Úteis
@@ -394,7 +394,7 @@ watch "docker-compose ps"
 
 ---
 
-## 👥 Equipe N2 DevOps
+## 👥 Equipe n3 DevOps
 
 - **[Seu Nome]** - Desenvolvimento e DevOps
 - **[Nome 2]** - Configuração CI/CD
@@ -415,4 +415,4 @@ watch "docker-compose ps"
 
 ---
 
-**🎉 Projeto N2 DevOps - Ambiente Completo Implementado com Sucesso! 🎉**
+**🎉 Projeto n3 DevOps - Ambiente Completo Implementado com Sucesso! 🎉**
